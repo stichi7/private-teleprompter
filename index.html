@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0b0d">
+    <meta name="color-scheme" content="dark">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Teleprompter">
+    <meta name="description" content="Ein privater Teleprompter, der Texte nur auf diesem Gerät speichert.">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Teleprompter</title>
+  </head>
+  <body>
+    <main id="editorView" class="editor-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Privat · nur auf diesem Gerät</p>
+          <h1>Teleprompter</h1>
+        </div>
+        <span id="saveStatus" class="save-status" role="status" aria-live="polite">Bereit</span>
+      </header>
+
+      <section class="editor-card" aria-labelledby="scriptHeading">
+        <div class="section-heading">
+          <h2 id="scriptHeading">Skript</h2>
+          <button id="clearScript" class="text-button" type="button">Text löschen</button>
+        </div>
+        <label class="sr-only" for="scriptInput">Skripttext</label>
+        <textarea
+          id="scriptInput"
+          rows="12"
+          spellcheck="true"
+          placeholder="Skript hier einfügen oder schreiben …"
+          autocomplete="off"
+        ></textarea>
+      </section>
+
+      <section class="settings-card" aria-labelledby="settingsHeading">
+        <h2 id="settingsHeading">Einstellungen</h2>
+
+        <div class="setting-row">
+          <div>
+            <label for="fontSize">Schriftgröße</label>
+            <output id="fontSizeValue" for="fontSize">52 px</output>
+          </div>
+          <input id="fontSize" type="range" min="28" max="88" step="2" value="52">
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <label for="scrollSpeed">Scrollgeschwindigkeit</label>
+            <output id="scrollSpeedValue" for="scrollSpeed">35 px/s</output>
+          </div>
+          <input id="scrollSpeed" type="range" min="8" max="100" step="1" value="35">
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <label for="mirrorMode">Spiegelmodus</label>
+            <span>Text horizontal spiegeln</span>
+          </div>
+          <input id="mirrorMode" class="switch" type="checkbox" role="switch">
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <label for="countdownMode">3-Sekunden-Countdown</label>
+            <span>Kurze Vorbereitung vor dem Start</span>
+          </div>
+          <input id="countdownMode" class="switch" type="checkbox" role="switch" checked>
+        </div>
+      </section>
+
+      <button id="startPrompter" class="primary-button" type="button">Teleprompter starten</button>
+      <p class="local-note">Dein Text bleibt ausschließlich im lokalen Speicher dieses Browsers.</p>
+    </main>
+
+    <section id="prompterView" class="prompter-view" aria-label="Teleprompter" hidden>
+      <div class="prompter-controls" aria-label="Teleprompter-Steuerung">
+        <button id="exitPrompter" class="control-button exit-button" type="button" aria-label="Teleprompter beenden">Beenden</button>
+        <div class="speed-controls">
+          <button id="slower" class="control-button icon-button" type="button" aria-label="Langsamer">−</button>
+          <output id="liveSpeed" aria-live="polite">35</output>
+          <button id="faster" class="control-button icon-button" type="button" aria-label="Schneller">+</button>
+        </div>
+      </div>
+
+      <div id="scrollArea" class="scroll-area" tabindex="0" aria-label="Skript. Antippen zum Pausieren oder Fortsetzen.">
+        <article id="prompterText" class="prompter-text"></article>
+        <div class="end-space" aria-hidden="true"></div>
+      </div>
+
+      <div id="countdown" class="countdown" aria-live="assertive" hidden></div>
+      <div id="playState" class="play-state" role="status" aria-live="polite">Läuft</div>
+    </section>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Teleprompter">
+  <rect width="1024" height="1024" rx="224" fill="#0a0b0d"/>
+  <rect x="168" y="210" width="688" height="604" rx="96" fill="#14171b" stroke="#58d6ad" stroke-width="42"/>
+  <path d="M312 388h400M312 512h400M312 636h270" fill="none" stroke="#f5f7fa" stroke-linecap="round" stroke-width="56"/>
+</svg>
