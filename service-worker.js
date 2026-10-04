@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "private-teleprompter-v1";
+const CACHE_NAME = "private-teleprompter-v4";
 const APP_SHELL = [
   "./",
   "./index.html",

@@ -1,7 +1,7 @@
 {
   "name": "Teleprompter",
   "short_name": "Teleprompter",
-  "description": "Privater, offline nutzbarer Teleprompter mit lokaler Textspeicherung.",
+  "description": "Privater, offline nutzbarer Teleprompter mit optionaler lokaler Kameraaufnahme.",
   "lang": "de-DE",
   "id": "./",
   "start_url": "./",

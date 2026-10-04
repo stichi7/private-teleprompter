@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Teleprompter">
-    <meta name="description" content="Ein privater Teleprompter, der Texte nur auf diesem Gerät speichert.">
+    <meta name="description" content="Ein privater Teleprompter mit optionaler lokaler Kameraaufnahme.">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -76,8 +76,89 @@
         </div>
       </section>
 
-      <button id="startPrompter" class="primary-button" type="button">Teleprompter starten</button>
+      <div class="mode-actions" aria-label="Modus auswählen">
+        <button id="startPrompter" class="primary-button" type="button">Nur Teleprompter starten</button>
+        <button id="openCameraSetup" class="secondary-button" type="button">Mit Kamera aufnehmen</button>
+      </div>
       <p class="local-note">Dein Text bleibt ausschließlich im lokalen Speicher dieses Browsers.</p>
+    </main>
+
+    <main id="cameraSetupView" class="editor-shell setup-shell" hidden>
+      <header class="setup-header">
+        <button id="closeCameraSetup" class="back-button" type="button">Zurück</button>
+        <div>
+          <p class="eyebrow">Aufnahme vorbereiten</p>
+          <h1>Mit Kamera</h1>
+        </div>
+      </header>
+
+      <section class="settings-card" aria-labelledby="overlayHeading">
+        <h2 id="overlayHeading">Teleprompter-Overlay</h2>
+
+        <fieldset class="choice-fieldset">
+          <legend>Größe</legend>
+          <div class="choice-grid choice-grid-four">
+            <label><input type="radio" name="overlaySize" value="compact"><span>Kompakt</span></label>
+            <label><input type="radio" name="overlaySize" value="third" checked><span>1/3</span></label>
+            <label><input type="radio" name="overlaySize" value="half"><span>Hälfte</span></label>
+            <label><input type="radio" name="overlaySize" value="almost"><span>Fast voll</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="choice-fieldset">
+          <legend>Position</legend>
+          <div class="choice-grid choice-grid-three">
+            <label><input type="radio" name="overlayPosition" value="top" checked><span>Oben</span></label>
+            <label><input type="radio" name="overlayPosition" value="middle"><span>Mitte</span></label>
+            <label><input type="radio" name="overlayPosition" value="bottom"><span>Unten</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="choice-fieldset">
+          <legend>Deckkraft</legend>
+          <div class="choice-grid choice-grid-three">
+            <label><input type="radio" name="overlayOpacity" value="40"><span>40 %</span></label>
+            <label><input type="radio" name="overlayOpacity" value="70" checked><span>70 %</span></label>
+            <label><input type="radio" name="overlayOpacity" value="100"><span>100 %</span></label>
+          </div>
+        </fieldset>
+
+        <div class="setting-row">
+          <div>
+            <label for="cameraFontSize">Schriftgröße</label>
+            <output id="cameraFontSizeValue" for="cameraFontSize">52 px</output>
+          </div>
+          <input id="cameraFontSize" type="range" min="28" max="88" step="2" value="52">
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <label for="cameraScrollSpeed">Scrollgeschwindigkeit</label>
+            <output id="cameraScrollSpeedValue" for="cameraScrollSpeed">35 px/s</output>
+          </div>
+          <input id="cameraScrollSpeed" type="range" min="8" max="100" step="1" value="35">
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <label for="cameraMirrorMode">Spiegelmodus</label>
+            <span>Nur den eingeblendeten Text spiegeln</span>
+          </div>
+          <input id="cameraMirrorMode" class="switch" type="checkbox" role="switch">
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <label for="cameraCountdownMode">3-Sekunden-Countdown</label>
+            <span>Vor Aufnahme und Textlauf herunterzählen</span>
+          </div>
+          <input id="cameraCountdownMode" class="switch" type="checkbox" role="switch" checked>
+        </div>
+      </section>
+
+      <p id="cameraSetupStatus" class="inline-message" role="status" aria-live="polite" hidden></p>
+      <button id="startCamera" class="primary-button" type="button">Kamera starten</button>
+      <p class="local-note">Kamera und Mikrofon werden erst nach diesem Tippen angefordert. Aufnahmen werden nicht hochgeladen.</p>
     </main>
 
     <section id="prompterView" class="prompter-view" aria-label="Teleprompter" hidden>
@@ -98,6 +179,56 @@
       <div id="countdown" class="countdown" aria-live="assertive" hidden></div>
       <div id="playState" class="play-state" role="status" aria-live="polite">Läuft</div>
     </section>
+
+    <section id="cameraView" class="camera-view" aria-label="Kameraaufnahme" hidden>
+      <video id="cameraPreview" class="camera-preview" autoplay muted playsinline></video>
+      <div class="camera-vignette" aria-hidden="true"></div>
+
+      <div class="camera-top-controls">
+        <button id="exitCamera" class="control-button exit-button" type="button">Beenden</button>
+        <div id="recordingIndicator" class="recording-indicator" role="status" aria-live="polite" hidden>
+          <span aria-hidden="true"></span> REC
+        </div>
+        <button id="switchCamera" class="control-button" type="button" hidden>Kamera wechseln</button>
+      </div>
+
+      <div id="cameraOverlay" class="camera-overlay size-third position-top" style="--overlay-alpha: 0.7;">
+        <div id="cameraScrollArea" class="camera-scroll-area" tabindex="0" aria-label="Teleprompter-Text. Antippen zum Pausieren oder Fortsetzen.">
+          <article id="cameraPrompterText" class="prompter-text camera-prompter-text"></article>
+          <div class="camera-end-space" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="camera-bottom-controls" aria-label="Aufnahmesteuerung">
+        <div class="speed-controls camera-speed-controls">
+          <button id="cameraSlower" class="control-button icon-button" type="button" aria-label="Langsamer">−</button>
+          <output id="cameraLiveSpeed" aria-live="polite">35</output>
+          <button id="cameraFaster" class="control-button icon-button" type="button" aria-label="Schneller">+</button>
+        </div>
+        <button id="startRecording" class="record-button" type="button"><span aria-hidden="true"></span>Aufnahme starten</button>
+        <button id="stopRecording" class="stop-button" type="button" hidden><span aria-hidden="true"></span>Aufnahme stoppen</button>
+      </div>
+
+      <div id="cameraCountdown" class="countdown camera-countdown" aria-live="assertive" hidden></div>
+      <div id="cameraPlayState" class="play-state camera-play-state" role="status" aria-live="polite">Bereit</div>
+      <p id="cameraMessage" class="camera-message" role="alert" hidden></p>
+    </section>
+
+    <main id="reviewView" class="review-view" hidden>
+      <div class="review-card">
+        <p class="eyebrow">Nur auf diesem Gerät</p>
+        <h1>Aufnahme bereit</h1>
+        <video id="recordingPreview" class="recording-preview" controls playsinline></video>
+        <p id="recordingDetails" class="recording-details"></p>
+        <div class="review-actions">
+          <a id="saveRecording" class="primary-button link-button" download>Video sichern</a>
+          <button id="shareRecording" class="secondary-button" type="button" hidden>Teilen …</button>
+          <button id="recordAgain" class="secondary-button" type="button">Noch einmal aufnehmen</button>
+          <button id="finishRecording" class="text-button neutral-text-button" type="button">Zurück zum Editor</button>
+        </div>
+        <p class="local-note">Das Video bleibt lokal. „Teilen“ öffnet den systemeigenen Teilen- und Speicherweg.</p>
+      </div>
+    </main>
 
     <script src="./app.js" defer></script>
   </body>
